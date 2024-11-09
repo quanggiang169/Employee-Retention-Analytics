@@ -612,7 +612,7 @@ df_hratt[sample(nrow(df_hratt), 1), ]
     ## # A tibble: 1 × 31
     ##     age attrition business_travel daily_rate department       distance_from_home
     ##   <dbl> <chr>     <chr>                <dbl> <chr>                         <dbl>
-    ## 1    34 No        Travel_Rarely         1351 Research & Deve…                  1
+    ## 1    42 No        Travel_Rarely          201 Research & Deve…                  1
     ## # ℹ 25 more variables: education <dbl>, education_field <chr>,
     ## #   environment_satisfaction <dbl>, gender <chr>, hourly_rate <dbl>,
     ## #   job_involvement <dbl>, job_level <dbl>, job_role <chr>,
@@ -912,30 +912,6 @@ df_hratt <- df_hratt %>%
 # Logistic regression to examine the association between attrition and age
 logistic_model_1 <- glm(attrition ~ age, data = df_hratt, family = binomial)
 
-# Display model results
-summary(logistic_model_1)
-```
-
-    ## 
-    ## Call:
-    ## glm(formula = attrition ~ age, family = binomial, data = df_hratt)
-    ## 
-    ## Coefficients:
-    ##             Estimate Std. Error z value Pr(>|z|)    
-    ## (Intercept)  0.20620    0.30599   0.674      0.5    
-    ## age         -0.05225    0.00870  -6.006 1.91e-09 ***
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## (Dispersion parameter for binomial family taken to be 1)
-    ## 
-    ##     Null deviance: 1298.6  on 1469  degrees of freedom
-    ## Residual deviance: 1259.1  on 1468  degrees of freedom
-    ## AIC: 1263.1
-    ## 
-    ## Number of Fisher Scoring iterations: 4
-
-``` r
 # Extract p-value from the model to assess significance
 p_value <- summary(logistic_model_1)$coefficients[2, 4]  # P-value for the 'age' variable
 
@@ -956,7 +932,7 @@ print(result)
 # Create the first plot: Attrition count per age
 plot1 <- ggplot(data = df_hratt, aes(x = age, fill = attrition)) +
   geom_bar(position = "dodge", color = "black") +  # Adding outline for better clarity
-  scale_fill_manual(values = c("red", "blue")) +  # Set colors for attrition
+  scale_fill_manual(values = c("lightcoral", "darkblue")) +  # Set colors for attrition
   ggtitle("Attrition Count per Age") +
   theme_minimal() +
   theme(
@@ -997,7 +973,18 @@ grid.arrange(plot1, plot2, ncol = 2)
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
 
-**Thus, I affirm that the hypothesis is TRUE.**
+This analysis looks at how age affects whether people leave or stay
+(attrition). The two variables used are *attrition* (Yes or No) and
+*age* (ranging from 18 to 60 years old). A logistic regression test was
+done to see if age is related to attrition. The result showed a p-value
+less than 0.05, which means that there is a significant association
+between age and attrition. Additionally, two bar charts were created to
+show how attrition is distributed across different age groups. The
+charts show that people under 40 have a higher rate of leaving
+(attrition) compared to those over 40.
+
+**Conclusion:** The analysis supports the hypothesis H1, showing a clear
+association between age and attrition.
 
 #### H2. People that have higher degree of education tend to leave more. **<span style="color: red;">FALSE</span>**
 
@@ -1008,17 +995,6 @@ table_e <- table(df_hratt$attrition, df_hratt$education)
 # Perform Chi-squared test
 chi_squared_test_2 <- chisq.test(table_e)
 
-# Check the result
-print(chi_squared_test_2)
-```
-
-    ## 
-    ##  Pearson's Chi-squared test
-    ## 
-    ## data:  table_e
-    ## X-squared = 3.074, df = 4, p-value = 0.5455
-
-``` r
 if (chi_squared_test_2$p.value < 0.05) {
   print("There is a significant association between attrition and education.")
 } else {
@@ -1031,7 +1007,7 @@ if (chi_squared_test_2$p.value < 0.05) {
 ``` r
 # Create the count plot using ggplot2 with softer colors
 ggplot(data = df_hratt, aes(x = education, fill = attrition)) +
-  geom_bar() +  # Default position is stacked; can change to 'dodge' if preferred
+  geom_bar(position = "fill", color = "black") +  # Adding outline for better clarity
   scale_fill_manual(values = c("lightcoral", "#0072B2")) +  # Softer shades for colors
   labs(
     title = "Attrition Count per Education Field",
@@ -1049,39 +1025,25 @@ ggplot(data = df_hratt, aes(x = education, fill = attrition)) +
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
 
-**Thus, I affirm that the hypothesis is FALSE.**
+This analysis explores the relationship between education level and
+attrition. The two variables examined are *attrition* (Yes or No) and
+*education* (ranging from Below College to Doctorate). A Chi-square test
+was performed to determine if there is an association between education
+level and attrition. The result yielded a p-value greater than 0.05,
+which suggests that there is no significant association between
+education and attrition. Additionally, a bar chart was created to
+visualize the attrition rate across different education levels (Below
+College, College, Bachelor, Master, Doctor). The chart shows that the
+attrition rate is approximately 0.125 across all education levels.
 
-#### H3. People who live far from work tend to leave. **<span style="color: green;">TRUE</span>**
+**Conclusion:** The analysis does not support the hypothesis H2.
+
+#### H3. People who live far from work tend to leave. **Need for further analysis**
 
 ``` r
 # Logistic regression to examine the association between attrition and distance_from_home
 logistic_model_3 <- glm(attrition ~ distance_from_home, data = df_hratt, family = binomial)
 
-# Display model results
-summary(logistic_model_3)
-```
-
-    ## 
-    ## Call:
-    ## glm(formula = attrition ~ distance_from_home, family = binomial, 
-    ##     data = df_hratt)
-    ## 
-    ## Coefficients:
-    ##                     Estimate Std. Error z value Pr(>|z|)    
-    ## (Intercept)        -1.890051   0.111382 -16.969  < 2e-16 ***
-    ## distance_from_home  0.024710   0.008312   2.973  0.00295 ** 
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## (Dispersion parameter for binomial family taken to be 1)
-    ## 
-    ##     Null deviance: 1298.6  on 1469  degrees of freedom
-    ## Residual deviance: 1290.0  on 1468  degrees of freedom
-    ## AIC: 1294
-    ## 
-    ## Number of Fisher Scoring iterations: 4
-
-``` r
 # Extract p-value from the model to assess significance
 p_value <- summary(logistic_model_3)$coefficients[2, 4]  # P-value for the 'distance_from_home' variable
 
@@ -1099,13 +1061,13 @@ print(result)
     ## [1] "There is a significant association between attrition and distance from home."
 
 ``` r
-# Create the KDE plot for distance from home
-ggplot() +
-  geom_density(data = df_left, aes(x = distance_from_home, fill = "Employees who left"), alpha = 0.5, color = "lightcoral") +
-  geom_density(data = df_stayed, aes(x = distance_from_home, fill = "Employees who stayed"), alpha = 0.5, color = "#0072B2") +
+# Create the bar plot
+ggplot(df_hratt, aes(x = distance_from_home, fill = attrition)) +
+  geom_bar(position = "fill", color = "black", alpha = 0.7) +
   labs(
     title = "Attrition Probabilities per Distance from Home",
     x = "Distance from Home",
+    y = "Count",
     fill = "Attrition"
   ) +
   scale_fill_manual(values = c("lightcoral", "#0072B2")) +
@@ -1113,6 +1075,7 @@ ggplot() +
   theme(
     plot.title = element_text(size = 20, face = "bold"),
     axis.title.x = element_text(size = 16),
+    axis.title.y = element_text(size = 16),
     legend.title = element_text(size = 15),
     legend.text = element_text(size = 15)
   )
@@ -1120,7 +1083,19 @@ ggplot() +
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-27-1.png)<!-- -->
 
-**Thus, we affirm that the hypothesis is TRUE.**
+The bar chart displays the distribution of attrition (Yes/No) across
+different distances from home. From the chart, it can be observed that
+there is no clear trend indicating an increase in attrition as the
+distance from home increases. The proportions of employees leaving
+(shown in blue) do not exhibit a significant rise across the different
+distance categories.
+
+**Conclusion:** Based on the Logistic Regression analysis (p-value \<
+0.05), there is a significant association between attrition and distance
+from home, suggesting that employees living farther from work are more
+likely to leave. However, the bar chart does not visually support a
+clear increase in attrition with distance, highlighting the need for
+further analysis to better understand this relationship.
 
 #### H4. Single people tend to leave more. **<span style="color: green;">TRUE</span>**
 
@@ -1131,17 +1106,6 @@ table_ms <- table(df_hratt$attrition, df_hratt$marital_status)
 # Perform Chi-squared test
 chi_squared_test_4 <- chisq.test(table_ms)
 
-# Check the result
-print(chi_squared_test_4)
-```
-
-    ## 
-    ##  Pearson's Chi-squared test
-    ## 
-    ## data:  table_ms
-    ## X-squared = 46.164, df = 2, p-value = 9.456e-11
-
-``` r
 if (chi_squared_test_4$p.value < 0.05) {
   print("There is a significant association between attrition and marital status.")
 } else {
@@ -1177,7 +1141,18 @@ ggplot(data = df_hratt, aes(x = marital_status, fill = attrition)) +
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-29-1.png)<!-- -->
 
-**Thus, I affirm that the hypothesis is TRUE.**
+This analysis explores the relationship between marital status and
+attrition. The two variables examined are attrition (Yes or No) and
+marital status (Single, Married, Divorced). A Chi-square test was
+performed to determine if there is an association between marital status
+and attrition. The result yielded a p-value less than 0.05, which
+suggests that there is a significant association between marital status
+and attrition. Additionally, a bar chart was created to visualize the
+attrition rate across different marital statuses (Single, Married,
+Divorced). The chart shows that the attrition rate for single employees
+is higher compared to those who are married or divorced.
+
+**Conclusion:** The analysis supports the hypothesis H4.
 
 #### H5. People who make overtime tend to leave more. **<span style="color: green;">TRUE</span>**
 
@@ -1188,17 +1163,6 @@ table_ot <- table(df_hratt$attrition, df_hratt$over_time)
 # Perform Chi-squared test
 chi_squared_test_5 <- chisq.test(table_ot)
 
-# Check the result
-print(chi_squared_test_5)
-```
-
-    ## 
-    ##  Pearson's Chi-squared test with Yates' continuity correction
-    ## 
-    ## data:  table_ot
-    ## X-squared = 87.564, df = 1, p-value < 2.2e-16
-
-``` r
 if (chi_squared_test_5$p.value < 0.05) {
   print("There is a significant association between attrition and overtime.")
 } else {
@@ -1211,7 +1175,7 @@ if (chi_squared_test_5$p.value < 0.05) {
 ``` r
 # Create the count plot with custom colors and ordered overtime
 ggplot(df_hratt, aes(x = over_time, fill = attrition)) +
-  geom_bar(position = "dodge", color ="black") +
+  geom_bar(position = "fill", color ="black") +
   scale_fill_manual(values = c("lightcoral", "#0072B2")) +
   labs(
     title = "Attrition count per overtime",
@@ -1230,7 +1194,17 @@ ggplot(df_hratt, aes(x = over_time, fill = attrition)) +
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->
 
-**Thus, I affirm that the hypothesis is TRUE.**
+This analysis explores the relationship between overtime and attrition.
+The two variables examined are overtime (Yes or No) and attrition (Yes
+or No). A Chi-square test was performed to determine if there is an
+association between overtime and attrition. The result indicated a
+significant association between the two variables. Additionally, a bar
+chart was created to visualize the attrition rate for employees who make
+overtime compared to those who do not. The chart shows that employees
+who make overtime have a higher attrition rate compared to those who do
+not.
+
+**Conclusion:** The analysis supports the hypothesis H5
 
 #### H6. People who present higher performance ratings tend to leave more. **<span style="color: red;">FALSE</span>**
 
@@ -1280,9 +1254,6 @@ ggplot(df_hratt, aes(x = performance_rating, fill = attrition)) +
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
 
-**Thus, I conclude that hypothesis H6 is FALSE and hypothesis H7 is
-TRUE.**
-
 #### H8. People who have lower job level tend to leave more. **<span style="color: green;">TRUE</span>**
 
 ``` r
@@ -1327,8 +1298,6 @@ ggplot(df_hratt, aes(x = job_level, fill = attrition)) +
 ```
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-35-1.png)<!-- -->
-
-**Thus, I affirm that the hypothesis is TRUE.**
 
 #### H9. People who weren’t promoted for long time tend to leave more. **<span style="color: red;">FALSE</span>**
 
@@ -1392,8 +1361,6 @@ ggplot(df_hratt, aes(x = years_since_last_promotion, fill = attrition)) +
 ```
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
-
-**Thus, I conclude that the hypothesis is FALSE.**
 
 #### H10. People who are in the current role for long time tend to leave more. **<span style="color: red;">FALSE</span>**
 
@@ -1462,8 +1429,6 @@ ggplot() +
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-39-1.png)<!-- -->
 
-**Thus, I conclude that the hypothesis is FALSE.**
-
 #### H11. People who feel less involved with the job tend to leave more. **<span style="color: green;">TRUE</span>**
 
 ``` r
@@ -1508,8 +1473,6 @@ ggplot(df_hratt, aes(x = factor(job_involvement), fill = attrition)) +
 ```
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-41-1.png)<!-- -->
-
-**Thus, the hypothesis is TRUE.**
 
 #### H12. People who feel less satisfied with the job tend to leave more. **<span style="color: green;">TRUE</span>**
 
@@ -1556,8 +1519,6 @@ ggplot(df_hratt, aes(x = factor(job_satisfaction), fill = attrition)) +
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-43-1.png)<!-- -->
 
-**Thus, the hypothesis is TRUE.**
-
 #### H13. People who feel less satisfied with the environment tend to leave more. **<span style="color: green;">TRUE</span>**
 
 ``` r
@@ -1602,8 +1563,6 @@ ggplot(df_hratt, aes(x = factor(environment_satisfaction), fill = attrition)) +
 ```
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-45-1.png)<!-- -->
-
-**Thus, the hypothesis is TRUE.**
 
 #### H14. People who have lower work life balance tend to leave more. **<span style="color: red;">FALSE</span>**
 
