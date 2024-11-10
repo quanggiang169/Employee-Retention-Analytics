@@ -588,9 +588,9 @@ df_hratt[sample(nrow(df_hratt), 1), ]
 ```
 
     ## # A tibble: 1 × 31
-    ##     age attrition business_travel daily_rate department distance_from_home
-    ##   <dbl> <chr>     <chr>                <dbl> <chr>                   <dbl>
-    ## 1    59 No        Travel_Rarely         1089 Sales                       1
+    ##     age attrition business_travel daily_rate department      distance_from_home
+    ##   <dbl> <chr>     <chr>                <dbl> <chr>                        <dbl>
+    ## 1    29 Yes       Travel_Rarely          350 Human Resources                 13
     ## # ℹ 25 more variables: education <dbl>, education_field <chr>,
     ## #   environment_satisfaction <dbl>, gender <chr>, hourly_rate <dbl>,
     ## #   job_involvement <dbl>, job_level <dbl>, job_role <chr>,
@@ -1934,17 +1934,6 @@ print(result)
     ## [1] "There is no significant association between attrition and percent_salary_hike."
 
 ``` r
-ggplot(df_hratt, aes(x = percent_salary_hike, y = attrition, fill = attrition)) +
-  geom_boxplot() +
-  scale_fill_manual(values = c("lightcoral", "steelblue")) +
-  labs(title = "Percent salary hike per attrition", x = "Percent Salary Hike", y = "Attrition") +
-  theme_minimal(base_size = 14) +
-  theme(plot.title = element_text(size = 14))
-```
-
-![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-57-1.png)<!-- -->
-
-``` r
 ggplot(df_hratt, aes(x = percent_salary_hike, fill = attrition)) +
   geom_bar(position = "fill") +
   scale_fill_manual(values = c("lightcoral", "steelblue")) +
@@ -1953,54 +1942,24 @@ ggplot(df_hratt, aes(x = percent_salary_hike, fill = attrition)) +
   theme(plot.title = element_text(size = 14))
 ```
 
-![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-57-2.png)<!-- -->
+![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-57-1.png)<!-- -->
 
 This analysis examines the association between salary hike range and
 attrition, testing the hypothesis that people with shorter salary hike
 ranges are more likely to leave. The variables analyzed are attrition
 (Yes or No) and percent_salary_hike. A Logistic regression test showed
-no significant association between the two variables. The boxplot
-further reveals that for the medium salary hike range, the attrition
-rates for both Yes and No categories are quite similar, but the upper
-quartile (box peak) for the No attrition group is higher than for the
-Yes group.
+no significant association between the two variables. The bar chart also
+does not reveal any clear relationship, with attrition rates being
+fairly consistent across different ranges of salary hikes.
 
-**Conclusion:** The analysis does not support the hypothesis H19.
-However, the higher upper quartile for the No attrition group suggests
-that salary hikes may still play a role in retention, albeit in a more
-complex way that requires further
+**Conclusion:** The analysis does not support hypothesis H19.
 
-#### H20. People who received less training last year tend to leave more. **<span style="color: red;">FALSE</span>**
+#### H20. People who received less training last year tend to leave more. (Need further analysis)
 
 ``` r
 # Logistic regression to examine the association between attrition and training times last year
 logistic_model_20 <- glm(attrition ~ training_times_last_year, data = df_hratt, family = binomial)
 
-# Display model results
-summary(logistic_model_20)
-```
-
-    ## 
-    ## Call:
-    ## glm(formula = attrition ~ training_times_last_year, family = binomial, 
-    ##     data = df_hratt)
-    ## 
-    ## Coefficients:
-    ##                          Estimate Std. Error z value Pr(>|z|)    
-    ## (Intercept)               -1.2948     0.1675  -7.731 1.07e-14 ***
-    ## training_times_last_year  -0.1300     0.0571  -2.276   0.0229 *  
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## (Dispersion parameter for binomial family taken to be 1)
-    ## 
-    ##     Null deviance: 1298.6  on 1469  degrees of freedom
-    ## Residual deviance: 1293.3  on 1468  degrees of freedom
-    ## AIC: 1297.3
-    ## 
-    ## Number of Fisher Scoring iterations: 4
-
-``` r
 # Extract p-value from the model to assess significance
 p_value <- summary(logistic_model_20)$coefficients[2, 4]  # P-value for the 'training_times_last_year' variable
 
@@ -2018,11 +1977,11 @@ print(result)
     ## [1] "There is a significant association between attrition and training times last year."
 
 ``` r
-# Plotting the count of attrition per training times last year
+# Plotting the rate of attrition per training times last year
 ggplot(df_hratt, aes(x = training_times_last_year, fill = attrition)) +
   geom_bar(position = "fill") + 
   scale_fill_manual(values = c("lightcoral", "steelblue")) +
-  labs(title = "Attrition count per training sessions last year", 
+  labs(title = "Attrition probabilities per training sessions last year", 
        x = "Training sessions last year", 
        fill = "Attrition") +
   theme_minimal(base_size = 15) +
@@ -2034,39 +1993,25 @@ ggplot(df_hratt, aes(x = training_times_last_year, fill = attrition)) +
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-59-1.png)<!-- -->
 
-#### H21. People who have been working for the same manager for short years tend to leave more. **<span style="color: green;">TRUE</span>**
+This analysis examines the association between training received last
+year and attrition, testing the hypothesis that people who received less
+training tend to leave more. The variables analyzed are attrition (Yes
+or No) and training_times_last_year. A Logistic regression test showed a
+significant association between the two variables. However, the bar
+chart does not reveal a clear relationship, as attrition rates appear
+relatively stable across different levels of training received.
+
+**Conclusion:** While the analysis indicates a significant association
+between training_times_last_year and attrition, the bar chart suggests
+that other factors may be influencing attrition. Further analysis could
+help clarify the relationship between these variables.
+
+#### H21. People who have been working for the same manager for short years tend to leave more. **<span style="color: red;">FALSE</span>**
 
 ``` r
 # Logistic regression to examine the association between attrition and relationship satisfaction
 logistic_model_21 <- glm(attrition ~ relationship_satisfaction, data = df_hratt, family = binomial)
 
-# Display model results
-summary(logistic_model_21)
-```
-
-    ## 
-    ## Call:
-    ## glm(formula = attrition ~ relationship_satisfaction, family = binomial, 
-    ##     data = df_hratt)
-    ## 
-    ## Coefficients:
-    ##                                    Estimate Std. Error z value Pr(>|z|)    
-    ## (Intercept)                        -1.69833    0.12908 -13.157   <2e-16 ***
-    ## relationship_satisfactionLow        0.35231    0.19691   1.789   0.0736 .  
-    ## relationship_satisfactionMedium    -0.04797    0.20678  -0.232   0.8165    
-    ## relationship_satisfactionVery High -0.05087    0.18709  -0.272   0.7857    
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## (Dispersion parameter for binomial family taken to be 1)
-    ## 
-    ##     Null deviance: 1298.6  on 1469  degrees of freedom
-    ## Residual deviance: 1293.6  on 1466  degrees of freedom
-    ## AIC: 1301.6
-    ## 
-    ## Number of Fisher Scoring iterations: 4
-
-``` r
 # Extract p-value from the model to assess significance
 p_value <- summary(logistic_model_21)$coefficients[2, 4]  # P-value for the 'relationship_satisfaction' variable
 
@@ -2084,11 +2029,11 @@ print(result)
     ## [1] "There is no significant association between relationship satisfaction and attrition."
 
 ``` r
-# Plot 1: Count plot for attrition count per years with current manager
+# Plot 1: rate plot for attrition count per years with current manager
 p1 <- ggplot(df_hratt, aes(x = years_with_curr_manager, fill = attrition)) +
   geom_bar(position = "fill") +
   scale_fill_manual(values = c("lightcoral", "steelblue")) +
-  labs(title = "Attrition Count per Years with Current Manager", 
+  labs(title = "Attrition probabilities per Years with Current Manager", 
        x = "Years with Current Manager", 
        fill = "Attrition") +
   theme_minimal(base_size = 15) +
@@ -2119,6 +2064,19 @@ grid.arrange(p1, p2, ncol = 1, heights = c(1, 1.2))
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-61-1.png)<!-- -->
 
+This analysis examines the association between years with the current
+manager and attrition, testing the hypothesis that people who have been
+working with the same manager for fewer years tend to leave more. The
+variables analyzed are attrition (Yes or No) and
+years_with_curr_manager. A Logistic regression test showed no
+significant association between the two variables. The bar chart reveals
+that the density of attrition (Yes) generally decreases as years with
+the current manager increase. However, at 14 years, the density of
+attrition unexpectedly rises before dropping back to 0 in subsequent
+years.
+
+**Conclusion:** The analysis does not support hypothesis H21
+
 #### H22. People who have lower quality of relationship with the manager tend to leave more. **<span style="color: red;">FALSE</span>**
 
 ``` r
@@ -2128,17 +2086,6 @@ contingency_table <- table(df_hratt$relationship_satisfaction, df_hratt$attritio
 # Perform the Chi-square test
 chi_square_test <- chisq.test(contingency_table)
 
-# Display the results
-print(chi_square_test)
-```
-
-    ## 
-    ##  Pearson's Chi-squared test
-    ## 
-    ## data:  contingency_table
-    ## X-squared = 5.2411, df = 3, p-value = 0.155
-
-``` r
 # Interpret the results
 if (chi_square_test$p.value < 0.05) {
   conclusion <- "There is a significant association between relationship satisfaction and attrition."
@@ -2153,12 +2100,12 @@ print(conclusion)
     ## [1] "There is no significant association between relationship satisfaction and attrition."
 
 ``` r
-# Plotting the count of attrition per relationship satisfaction level
+# Plotting the rate of attrition per relationship satisfaction level
 ggplot(df_hratt, aes(x = relationship_satisfaction, fill = attrition)) +
   geom_bar(position = "fill") +
   scale_fill_manual(values = c("lightcoral", "steelblue")) +
   labs(
-    title = "Attrition count per relationship with current manager satisfaction",
+    title = "Attrition Probabilities per relationship with current manager satisfaction",
     x = "Relationship satisfaction \n(1 = Low ; 2 = Medium ; 3 = High ; 4 = Very High)",
     fill = "Attrition"
   ) +
@@ -2173,6 +2120,18 @@ ggplot(df_hratt, aes(x = relationship_satisfaction, fill = attrition)) +
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-63-1.png)<!-- -->
 
+This analysis examines the association between relationship satisfaction
+with the manager and attrition, testing the hypothesis that people with
+lower quality relationships with their manager tend to leave more. The
+variables analyzed are attrition (Yes or No) and
+relationship_satisfaction (Low, Medium, High, Very High). A Chi-square
+test showed no significant association between the two variables. The
+bar chart reveals that the highest attrition rate is in the Low
+relationship satisfaction category, followed by Medium, with High and
+Very High having similar, lower rates of attrition.
+
+**Conclusion:** The analysis does not support hypothesis H22.
+
 #### H23. People who travel more frequently tend to leave more. **<span style="color: red;">FALSE</span>**
 
 ``` r
@@ -2182,17 +2141,6 @@ contingency_table <- table(df_hratt$business_travel, df_hratt$attrition)
 # Perform the Chi-square test
 chi_square_test <- chisq.test(contingency_table)
 
-# Display the results
-print(chi_square_test)
-```
-
-    ## 
-    ##  Pearson's Chi-squared test
-    ## 
-    ## data:  contingency_table
-    ## X-squared = 24.182, df = 2, p-value = 5.609e-06
-
-``` r
 # Interpret the results
 if (chi_square_test$p.value < 0.05) {
   conclusion <- "There is a significant association between business travel and attrition."
@@ -2207,11 +2155,11 @@ print(conclusion)
     ## [1] "There is a significant association between business travel and attrition."
 
 ``` r
-# Plotting the count of attrition per business travel frequency
+# Plotting the rate of attrition per business travel frequency
 ggplot(df_hratt, aes(x = business_travel, fill = attrition)) +
   geom_bar(position = "fill") +
   scale_fill_manual(values = c("lightcoral", "steelblue")) +
-  labs(title = "Attrition count per business travel frequency",
+  labs(title = "Attrition Probabilities per business travel frequency",
        x = "Business travel frequency",
        fill = "Attrition") +
   theme_minimal(base_size = 15) +
@@ -2223,6 +2171,17 @@ ggplot(df_hratt, aes(x = business_travel, fill = attrition)) +
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-65-1.png)<!-- -->
 
+This analysis examines the association between business travel frequency
+and attrition, testing the hypothesis that people who travel more
+frequently tend to leave more. The variables analyzed are attrition (Yes
+or No) and business_travel (Non-Travel, Travel Rarely, Travel
+Frequently). A Chi-square test showed a significant association between
+the two variables. The bar chart indicates that the highest attrition
+rate is in the “Travel Frequently” category, followed by “Travel
+Rarely,” and the lowest attrition rate is in the “Non-Travel” category.
+
+**Conclusion:** The analysis supports hypothesis H23
+
 #### H24. Which departments has more turnover?
 
 ``` r
@@ -2232,17 +2191,6 @@ contingency_table <- table(df_hratt$department, df_hratt$attrition)
 # Perform the Chi-square test
 chi_square_test <- chisq.test(contingency_table)
 
-# Display the results
-print(chi_square_test)
-```
-
-    ## 
-    ##  Pearson's Chi-squared test
-    ## 
-    ## data:  contingency_table
-    ## X-squared = 10.796, df = 2, p-value = 0.004526
-
-``` r
 # Interpretation of results
 if(chi_square_test$p.value < 0.05) {
   print("There is a significant association in attrition rates across departments.")
@@ -2254,11 +2202,11 @@ if(chi_square_test$p.value < 0.05) {
     ## [1] "There is a significant association in attrition rates across departments."
 
 ``` r
-# Plotting the count of attrition per department
+# Plotting the rate of attrition per department
 ggplot(df_hratt, aes(x = department, fill = attrition)) +
   geom_bar(position = "fill") +
   scale_fill_manual(values = c("lightcoral", "steelblue")) +
-  labs(title = "Attrition count per department",
+  labs(title = "Attrition Probabilities per department",
        x = "Department",
        fill = "Attrition") +
   theme_minimal(base_size = 15) +
@@ -2272,29 +2220,45 @@ ggplot(df_hratt, aes(x = department, fill = attrition)) +
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-67-1.png)<!-- -->
 
-#### H25. Which education field has more turnover?
+This analysis examines which departments have higher turnover, testing
+the hypothesis that some departments experience more attrition than
+others. The variables analyzed are attrition (Yes or No) and department.
+A Chi-square test showed a significant association between the two
+variables. The bar chart indicates that the highest attrition rate is in
+the Sales department, followed by HR, and the lowest attrition rate is
+in the R&D department.
+
+**Conclusion:** The analysis confirms that there is a significant
+association between department and attrition. The Sales department has
+the highest turnover, followed by HR, while the R&D department shows the
+lowest attrition rate.
+
+#### H25. Which education field has more turnover? (Need for further analysis)
 
 ``` r
 # Create a contingency table for education field and attrition
 contingency_table_education <- table(df_hratt$education_field, df_hratt$attrition)
 
+# Print the contingency table to check the count of observations in each cell
+print(contingency_table_education)
+```
+
+    ##                   
+    ##                     No Yes
+    ##   Human Resources   20   7
+    ##   Life Sciences    517  89
+    ##   Marketing        124  35
+    ##   Medical          401  63
+    ##   Other             71  11
+    ##   Technical Degree 100  32
+
+``` r
 # Perform the Chi-square test
 chi_square_test_education <- chisq.test(contingency_table_education)
 ```
 
     ## Warning in stats::chisq.test(x, y, ...): Chi-squared approximation may be
     ## incorrect
-
-``` r
-# Display the results
-print(chi_square_test_education)
-```
-
-    ## 
-    ##  Pearson's Chi-squared test
-    ## 
-    ## data:  contingency_table_education
-    ## X-squared = 16.025, df = 5, p-value = 0.006774
 
 ``` r
 # Interpretation of results
@@ -2308,11 +2272,11 @@ if (chi_square_test_education$p.value < 0.05) {
     ## [1] "There is a significant association between education field and attrition."
 
 ``` r
-# Plotting the count of attrition per education field
+# Plotting the rate of attrition per education field
 ggplot(df_hratt, aes(x = education_field, fill = attrition)) +
   geom_bar(position = "fill") +
   scale_fill_manual(values = c("lightcoral", "steelblue")) +
-  labs(title = "Attrition count per education field",
+  labs(title = "Attrition Probabilities per education field",
        x = "Education Field",
        fill = "Attrition") +
   theme_minimal(base_size = 15) +
@@ -2325,3 +2289,18 @@ ggplot(df_hratt, aes(x = education_field, fill = attrition)) +
 ```
 
 ![](employee_attrition_analysis_files/figure-gfm/unnamed-chunk-69-1.png)<!-- -->
+
+This analysis examines which education field has higher turnover,
+testing the hypothesis that certain education fields experience more
+attrition. The variables analyzed are attrition (Yes or No) and
+education_field. A Chi-square test showed an association between the two
+variables; however, it was noted that the Chi-square test results may be
+unreliable. The bar chart indicates that the highest attrition rate is
+in the HR field, followed by Technical Degree, Marketing, and other
+fields.
+
+**Conclusion:** The analysis suggests a potential association between
+education field and attrition, with the highest turnover in the HR
+field, followed by Technical Degree and Marketing. However, due to
+concerns about the reliability of the Chi-square results, further
+investigation is needed to confirm these findings.
