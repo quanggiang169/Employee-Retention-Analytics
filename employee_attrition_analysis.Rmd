@@ -57,6 +57,8 @@ library(moments)
 library(janitor)
 library(knitr)
 library(gridExtra)
+library(ggcorrplot)
+library(reshape2)
 ```
 
 ## 3. Checking the data set
@@ -460,6 +462,8 @@ for (col in names(num_attributes)) {
 par(mfrow = c(1, 1))
 ```
 
+As we can see, except for the age variable, no other variable follows a normal distribution, and even age is not perfectly normal. Therefore, it's better to leave the age variable as it is, rather than attempting normalization, which could lead to errors.
+
 #### 6.3.3. Categorical Variables
 Finally, I will analyze the categorical variables through count plots for each attribute. I will create subplots for each categorical variable, enabling me to compare the counts across different categories effectively. This step enhances my understanding of how various categorical factors are distributed in the dataset.
 ```{r histogram-plotting-cat, echo=TRUE, fig.width=14, fig.height=12}
@@ -500,8 +504,6 @@ for (i in seq_along(cat_attributes)) {
 # Reset layout after plotting
 par(mfrow = c(1, 1))
 ```
-
-By conducting this univariate analysis, I gain essential insights into the individual characteristics of my dataset, which will inform further analyses and decision-making processes.
 
 ### 6.4 Bivariate analysis - hypotheses validation
 #### H1. People up to 40s tend to leave. **<span style="color: green;">TRUE</span>**
@@ -1580,3 +1582,177 @@ This analysis examines which education field has higher turnover, testing the hy
 
 **Conclusion:** The analysis suggests a potential association between education field and attrition, with the highest turnover in the HR field, followed by Technical Degree and Marketing. However, due to concerns about the reliability of the Chi-square results, further investigation is needed to confirm these findings.
 
+#### Hypotheses Summary
+```{r, echo = FALSE}
+# Create a data frame with hypotheses and results
+hypotheses <- data.frame(
+  Hypothesis = c("H1: People up to 40s tend to leave",
+                 "H2: People with higher education tend to leave more",
+                 "H3: People who live far from work tend to leave",
+                 "H4: Single people tend to leave more",
+                 "H5: People who work overtime tend to leave more",
+                 "H6: People with higher performance ratings tend to leave more",
+                 "H7: People with lower performance ratings tend to leave more",
+                 "H8: People with lower job levels tend to leave more",
+                 "H9: People not promoted for a long time tend to leave more",
+                 "H10: People in the same role for a long time tend to leave more",
+                 "H11: People who feel less involved tend to leave more",
+                 "H12: People who feel less satisfied with the job tend to leave more",
+                 "H13: People who feel less satisfied with the environment tend to leave more",
+                 "H14: People with lower work-life balance tend to leave more",
+                 "H15: People with more professional years tend not to leave",
+                 "H16: People with more years in the company tend not to leave",
+                 "H17: People who are job hoppers tend to leave more",
+                 "H18: People with higher salaries tend not to leave",
+                 "H19: People with shorter salary hike ranges tend to leave",
+                 "H20: People with less training last year tend to leave more",
+                 "H21: People who have worked with the same manager for short years tend to leave more",
+                 "H22: People with lower manager relationship quality tend to leave more",
+                 "H23: People who travel frequently tend to leave more",
+                 "H24: Which department has more turnover?",
+                 "H25: Which education field has more turnover?"),
+  
+  Conclusion = c("TRUE", "FALSE", "Need for further analysis", "TRUE", "TRUE", "FALSE", "FALSE",
+                 "TRUE", "FALSE", "Need for further analysis", "TRUE", "TRUE", "TRUE", "TRUE", "TRUE",
+                 "TRUE", "FALSE", "Need for further analysis", "FALSE", "Need for further analysis",
+                 "FALSE", "FALSE", "FALSE", "Sales", "Need for further analysis")
+)
+
+# Render the table
+kable(hypotheses, col.names = c("Hypothesis", "Conclusion"), align = "l", caption = "Summary of Hypotheses Testing Results")
+```
+
+### 6.5. Multivariate analysis - correlations
+#### 6.5.1. Correlation between numerical attributes
+
+```{r, fig.width= 12, fig.height= 6}
+# Calculate the correlation matrix
+correlation <- cor(num_attributes, method = "pearson")
+
+# Plot the correlation heatmap
+ggcorrplot(correlation, 
+           method = "square", 
+           lab = TRUE,               # Display correlation coefficients in cells
+           lab_size = 3,             # Slightly larger font size for better readability
+           colors = c("#4575b4", "white", "#d73027"),  # High-contrast color palette
+           title = "Correlation Heatmap of Numerical Variables",
+           ggtheme = theme_minimal(base_size = 12),    # Increase base font size for larger plot
+           legend.title = "Correlation") +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+    axis.text.y = element_text(size = 10)
+  )
+```
+
+**Analysis of the Data:**
+
+Correlation between age and other factors:
+
+- Monthly income has a strong correlation with age (0.497), suggesting that older employees tend to have higher salaries. This could reflect that employees with more years of experience tend to reach higher salary levels.
+- Total working years also shows a strong correlation with age (0.680), indicating that older employees often have more years of experience in the workforce.
+- Years at company and years in current role also show high correlations with age, at 0.514 and 0.364, respectively. This suggests that older employees tend to stay longer at a company and often remain in the same role for longer periods.
+
+Correlation between salary and other factors:
+
+- Monthly income shows a strong correlation with total working years (0.773), implying that employees with more experience tend to have higher salaries.
+- Monthly income also has a weak negative correlation with percent salary hike (-0.027), indicating that employees with higher salaries may not necessarily receive substantial salary increases in recent years.
+
+Correlation between years of work experience and other factors:
+
+- Total working years shows a strong correlation with years at company (0.628) and years in current role (0.460), indicating that employees with more years of experience tend to stay longer at a company and often in the same role.
+
+Other factors such as the number of companies worked at and training hours:
+
+- Number of companies worked at (0.149) has a weak correlation with monthly income, suggesting that employees who have worked at multiple companies do not necessarily earn higher salaries.
+- Training hours last year show weak correlations with most other factors, indicating that training does not have a clear relationship with salary or years of experience.
+
+**Conclusion:**
+
+- Factors such as age, total working years, and tenure at the company have a significant impact on salary and career progression. Older employees with more experience and longer tenure at a company typically earn higher salaries.
+- However, factors like the number of companies worked at or the number of training hours have weak relationships with other factors, suggesting they are not directly decisive in determining salary or career advancement.
+- Employee training and development programs may need further evaluation to determine their impact on performance and salary growth.
+
+#### 6.5.2. Correlations between categorical attributes
+
+```{r}
+# Define the function to calculate Cramér's V for all combinations of categorical variables
+calculate_cramers_v <- function(data) {
+  
+  # Function to calculate Cramér's V
+  cramers_v <- function(x, y) {
+    # Convert to factors (in case they are not)
+    x <- as.factor(x)
+    y <- as.factor(y)
+    
+    # Create contingency table
+    contingency_table <- table(x, y)
+    
+    # Perform the chi-squared test
+    chi2_result <- chisq.test(contingency_table)
+    
+    # Get the number of observations, and dimensions of the contingency table
+    n <- sum(contingency_table)
+    r <- nrow(contingency_table)
+    k <- ncol(contingency_table)
+    
+    # Calculate Cramér's V
+    cramer_v_value <- sqrt((chi2_result$statistic / n) / min(r - 1, k - 1))
+    return(cramer_v_value)
+  }
+  
+  # Calculate Cramér's V for each combination of variables
+  a1 <- cramers_v(data$job_role, data$job_role)
+  a2 <- cramers_v(data$job_role, data$department)
+  a3 <- cramers_v(data$job_role, data$business_travel)
+  
+  a4 <- cramers_v(data$department, data$job_role)
+  a5 <- cramers_v(data$department, data$department)
+  a6 <- cramers_v(data$department, data$business_travel)
+  
+  a7 <- cramers_v(data$over_time, data$job_role)
+  a8 <- cramers_v(data$over_time, data$department)
+  a9 <- cramers_v(data$over_time, data$business_travel)
+  
+  # Create a data frame to store the correlation values
+  correlation_matrix <- data.frame(
+    job_role = c(a1, a2, a3),
+    department = c(a4, a5, a6),
+    business_travel = c(a7, a8, a9)
+  )
+  
+  # Set the index to the column names
+  row.names(correlation_matrix) <- colnames(correlation_matrix)
+  
+  # Return the correlation matrix
+  return(correlation_matrix)
+}
+
+# Calculate Cramér's V correlation matrix for your dataset
+correlation_result <- calculate_cramers_v(cat_attributes)
+print(correlation_result)
+
+# Reshape the correlation matrix to long format for ggplot
+correlation_long <- correlation_result %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "Var1") %>%
+  pivot_longer(cols = -Var1, names_to = "Var2", values_to = "value")
+
+# Plotting the heatmap
+ggplot(correlation_long, aes(Var1, Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "#A6D4D1") +  # Soft blue-green gradient
+  geom_text(aes(label = round(value, 2)), color = "black", size = 6) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Cramér's V Correlation Heatmap", x = "Variables", y = "Variables") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+The correlation analysis between job_role, department, and business_travel shows:
+
+- job_role and department: There is a strong correlation (0.939), meaning job roles are closely linked to specific departments. Each department tends to have certain job roles.
+- job_role and business_travel: The correlation is very low (0.067), which means that job roles don't have much impact on business travel. Employees in different roles seem to travel for work at similar rates.
+- department and business_travel: The correlation is almost zero (0.008), suggesting that business travel is not influenced by the department an employee works in.
+
+In conclusion, while job roles are closely tied to departments, business travel is mostly unaffected by both job roles and departments.
